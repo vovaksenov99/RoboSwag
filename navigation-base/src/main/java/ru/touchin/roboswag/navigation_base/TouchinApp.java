@@ -62,7 +62,6 @@ public abstract class TouchinApp extends Application {
                 final Crashlytics crashlytics = new Crashlytics();
                 Fabric.with(this, crashlytics);
                 Fabric.getLogger().setLogLevel(Log.ERROR);
-                Lc.initialize(new CrashlyticsLogProcessor(crashlytics), false);
             } catch (final NoClassDefFoundError error) {
                 Lc.initialize(new ConsoleLogProcessor(LcLevel.INFO), false);
                 Lc.e("Crashlytics initialization error! Did you forget to add\n"

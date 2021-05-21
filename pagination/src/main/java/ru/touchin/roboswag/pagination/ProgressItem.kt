@@ -1,3 +1,3 @@
-package ru.touchin.mvi_test.core_ui.pagination
+package ru.touchin.roboswag.pagination
 
 object ProgressItem

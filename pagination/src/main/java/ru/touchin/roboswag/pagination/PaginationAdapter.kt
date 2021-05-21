@@ -3,9 +3,8 @@ package ru.touchin.roboswag.pagination
 import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import ru.touchin.adapters.AdapterDelegate
-import ru.touchin.adapters.DelegationListAdapter
-import ru.touchin.mvi_test.core_ui.pagination.ProgressItem
+import ru.touchin.roboswag.recyclerview_adapters.adapters.AdapterDelegate
+import ru.touchin.roboswag.recyclerview_adapters.adapters.DelegationListAdapter
 
 class PaginationAdapter(
         private val nextPageCallback: () -> Unit,
@@ -27,13 +26,23 @@ class PaginationAdapter(
         delegate.forEach(this::addDelegate)
     }
 
-    fun update(data: List<Any>, isPageProgress: Boolean) {
-        submitList(data + listOfNotNull(ProgressItem.takeIf { isPageProgress }))
+    fun update(data: List<Any>, updateState: UpdateState) {
+        submitList(data + listOfNotNull(when (updateState) {
+            is UpdateState.Common -> null
+            is UpdateState.Progress -> ProgressItem
+            is UpdateState.Error -> ErrorItem
+        }))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: List<Any>) {
         super.onBindViewHolder(holder, position, payloads)
         if (!fullData && position >= itemCount - 10) nextPageCallback.invoke()
+    }
+
+    sealed class UpdateState {
+        object Common : UpdateState()
+        object Progress : UpdateState()
+        object Error : UpdateState()
     }
 
 }

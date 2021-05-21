@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import ru.touchin.roboswag.mvi_arch.marker.SideEffect
 import ru.touchin.roboswag.mvi_arch.marker.StateChange
 import ru.touchin.roboswag.mvi_arch.marker.ViewState
+import ru.touchin.roboswag.mvi_arch.mediator.MediatorStore
 
 abstract class Store<Change : StateChange, Effect : SideEffect, State : ViewState>(
         initialState: State
@@ -32,6 +33,14 @@ abstract class Store<Change : StateChange, Effect : SideEffect, State : ViewStat
 
     private val childStores: MutableList<ChildStore<*, *, *>> = mutableListOf()
 
+    private val mediatorStore = MediatorStore(
+            listOfNotNull(
+//                    Min api 24
+//                    https://github.com/TouchInstinct/RoboSwag/issues/180
+//                    LoggingMediator(this::class.simpleName!!).takeIf { BuildConfig.DEBUG }
+            )
+    )
+
     init {
         storeScope.launch {
             effects
@@ -43,10 +52,13 @@ abstract class Store<Change : StateChange, Effect : SideEffect, State : ViewStat
     }
 
     fun changeState(change: Change) {
+        mediatorStore.onStateChange(change)
+
         val (newState, newEffect) = reduce(currentState, change)
 
         if (currentState != newState) {
             state.value = newState
+            mediatorStore.onNewState(newState)
         }
 
         childStores.forEach { childStore ->
@@ -55,6 +67,7 @@ abstract class Store<Change : StateChange, Effect : SideEffect, State : ViewStat
 
         newEffect?.let {
             effects.offer(it)
+            mediatorStore.onEffect(it)
         }
 
     }
